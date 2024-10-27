@@ -3,11 +3,12 @@ import sys
 import re
 
 # Regular expressions for parsing
-ALLOWED_NAME_PATTERN = r"[A-Z_]+"
+ALLOWED_NAME_PATTERN = r"[A-Z_]+"  # Allowed names for constants and keys
 CONST_INITIALIZATION_EXPRESSION = rf"const ({ALLOWED_NAME_PATTERN}) = (\d+);"
 DICT_OPEN_EXPRESSION = rf"({ALLOWED_NAME_PATTERN}) : \{{"
 DICT_CLOSE_EXPRESSION = r"}"
-KEY_VALUE_EXPRESSION = rf"({ALLOWED_NAME_PATTERN}) : ([\d\w]+)"
+KEY_VALUE_EXPRESSION = rf"({ALLOWED_NAME_PATTERN}) : ([\d\w#()\s]+)"  # Allows arrays as values in key-value pairs
+ARRAY_EXPRESSION = r"#\((.*?)\)"  # Matches array syntax
 
 # Global dictionary to store constants
 constants = {}
@@ -66,12 +67,25 @@ def parse_block(file):
         key_value_match = re.match(KEY_VALUE_EXPRESSION, line)
         if key_value_match:
             key_name, value = key_value_match.groups()
-            if value in constants:
-                config_dict[key_name] = constants[value]  # Use constant value if referenced
+            
+            # Check if value is an array
+            array_match = re.match(ARRAY_EXPRESSION, value)
+            if array_match:
+                # Parse and store array as a list of integers
+                config_dict[key_name] = parse_array_values(array_match.group(1))
+            elif value in constants:
+                # Use constant value if referenced
+                config_dict[key_name] = constants[value]
             else:
-                config_dict[key_name] = int(value)  # Convert to int if it's a number
+                # Convert to int if it's a number
+                config_dict[key_name] = int(value) if value.isdigit() else value
 
     return config_dict
+
+def parse_array_values(values_str):
+    # Split the values based on spaces and convert them to integers
+    values = [int(val) for val in values_str.split() if val.isdigit()]
+    return values
 
 def output_to_yaml(constants_dict, config_dict):
     # Merge with config_dict
