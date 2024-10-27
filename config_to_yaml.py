@@ -5,12 +5,12 @@ import re
 # Regular expressions for parsing
 ALLOWED_NAME_PATTERN = r"[A-Z_]+"
 ALLOWED_OPERATIONS_EXPRESSION = r"\+|\-|\*|/"
-CONST_INITIALIZATION_EXPRESSION = rf"const ({ALLOWED_NAME_PATTERN}) = (\d+);"
+CONST_INITIALIZATION_EXPRESSION = rf"const ({ALLOWED_NAME_PATTERN}) = ([\d\.]+);"  # Allow floats
 DICT_OPEN_EXPRESSION = rf"({ALLOWED_NAME_PATTERN}) : \{{"
 DICT_CLOSE_EXPRESSION = r"}"
-KEY_VALUE_EXPRESSION = rf"({ALLOWED_NAME_PATTERN}) : ([\d\w#()\s$[\]+\-/*]+)"
+KEY_VALUE_EXPRESSION = rf"({ALLOWED_NAME_PATTERN}) : ([\d\w#()\s$[\]+\-/*\.]+)"  # Allow floats
 ARRAY_EXPRESSION = r"#\((.*?)\)"
-ARITHMETIC_EXPRESSION = rf"\$\[({ALLOWED_OPERATIONS_EXPRESSION}) ({ALLOWED_NAME_PATTERN}|\d+) ({ALLOWED_NAME_PATTERN}|\d+)\]"
+ARITHMETIC_EXPRESSION = rf"\$\[({ALLOWED_OPERATIONS_EXPRESSION}) ({ALLOWED_NAME_PATTERN}|\d+|\d+\.\d+) ({ALLOWED_NAME_PATTERN}|\d+|\d+\.\d+)\]"
 
 # Global dictionary to store constants
 constants = {}
@@ -50,7 +50,7 @@ def parse_block(file):
         const_match = re.match(CONST_INITIALIZATION_EXPRESSION, line)
         if const_match:
             const_name, const_value = const_match.groups()
-            constants[const_name] = int(const_value)
+            constants[const_name] = convert_to_number(const_value)  # Store as appropriate type
             continue
 
         # Dictionary opening line
@@ -81,14 +81,24 @@ def parse_block(file):
             elif value in constants:
                 config_dict[key_name] = constants[value]  # Use constant value if referenced
             else:
-                config_dict[key_name] = int(value)  # Convert to int if it's a number
+                config_dict[key_name] = convert_to_number(value)  # Convert to appropriate type
 
     return config_dict
 
+def convert_to_number(value):
+    """Convert a string value to an int or float, depending on its format."""
+    try:
+        num = float(value)
+        if num.is_integer():  # Check if it's a whole number
+            return int(num)  # Store as int if there's no decimal part
+        return num  # Store as float otherwise
+    except ValueError:
+        return value  # Return the original value if it cannot be converted
+
 def evaluate_expression(operator, operand1, operand2):
-    # Convert operands to integers, resolving constants if needed
-    operand1 = constants[operand1] if operand1 in constants else int(operand1)
-    operand2 = constants[operand2] if operand2 in constants else int(operand2)
+    # Convert operands to appropriate types
+    operand1 = constants[operand1] if operand1 in constants else convert_to_number(operand1)
+    operand2 = constants[operand2] if operand2 in constants else convert_to_number(operand2)
 
     # Perform the arithmetic operation
     if operator == "+":
@@ -98,13 +108,13 @@ def evaluate_expression(operator, operand1, operand2):
     elif operator == "*":
         return operand1 * operand2
     elif operator == "/":
-        return operand1 // operand2  # Using integer division for simplicity
+        return operand1 / operand2  # Use float division for generality
 
 def parse_array(value):
     # Extract the content inside #()
     inner_values = re.match(ARRAY_EXPRESSION, value).group(1)
-    # Split by whitespace and convert to integers
-    return [int(v) for v in inner_values.split()]
+    # Split by whitespace and convert to appropriate types
+    return [convert_to_number(v) for v in inner_values.split()]
 
 def output_to_yaml(constants_dict, config_dict):
     # Merge constants and configuration into a single output
