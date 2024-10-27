@@ -112,17 +112,12 @@ def evaluate_expression(operator, operand1, operand2):
 
 def parse_array(array_str):
     # Step 1: Replace the outer #() with [] and spaces with commas
-    array_str = array_str.replace('#(', '[').replace(')', ']').replace(' ', ',')
+    array_str = array_str.replace('#( ', '[').replace(' )', ']').replace(' ', ',')
 
     # Step 2: Safely evaluate the string as a Python literal
     eval_result = eval(array_str)
 
     return eval_result
-
-# Example usage:
-input_str = "#(#(1 2) #(3 4) 5 6)"
-output_array = parse_array(input_str)
-print(output_array)  # Output: [[1, 2], [3, 4], 5, 6]
 
 
 def output_to_yaml(constants_dict, config_dict):
