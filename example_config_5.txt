@@ -1,0 +1,27 @@
+const TIMEOUT = 30;
+
+DBCONFIG : {
+    HOSTPORTS : #( 5432 5433 5434 ),
+    RETRY : #( 3 5 7 ),
+    MATH : {
+        TIMEOUTPLUS : $[+ TIMEOUT 100],
+        TIMEOUTMINUS : $[- TIMEOUT 100],
+        TIMEOUTDIVIDE : $[/ TIMEOUT 100],
+        TIMEOUTMULTIPLY : $[* TIMEOUT 100],
+    },
+    NESTEDARRAY : #( #( 1 2 ) #( 3 4 ) 5 6 #( 7 #( 8 #( 9 10 ) ) ) ),
+    DEEP : {
+        DEEP : {
+            DEEP : {
+                DEEP : {
+                    ZKEY : 1,
+                }
+            }
+        }
+    }
+}
+
+ANOTHERUNRELATEDDICT : {
+    FKEY : 6,
+    REFERENCETOTIMEOUT : TIMEOUT
+}

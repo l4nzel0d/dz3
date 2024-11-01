@@ -1,0 +1,11 @@
+const DEFAULTTIMEOUT = 20;
+
+APPLICATIONSETTINGS : {
+    LOGLEVEL : #( 1 2 3 ),
+    MAXRETRIES : 5,
+    TIMEOUT : $[+ DEFAULTTIMEOUT 10],
+    DATABASESETTINGS : {
+        HOST : 127,
+        PORT : 3306
+    }
+}

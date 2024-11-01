@@ -3,7 +3,7 @@ import sys
 import re
 
 # Regular expressions for parsing
-ALLOWED_NAME_PATTERN = r"[A-Z_]+"
+ALLOWED_NAME_PATTERN = r"[A-Z]+"
 ALLOWED_OPERATIONS_EXPRESSION = r"\+|\-|\*|/"
 CONST_INITIALIZATION_EXPRESSION = rf"const ({ALLOWED_NAME_PATTERN}) = ([\d\.]+);"  # Allow floats
 DICT_OPEN_EXPRESSION = rf"({ALLOWED_NAME_PATTERN}) : \{{"
@@ -22,7 +22,7 @@ def main():
 
     config_file_path = sys.argv[1]
     config_dict = parse_config_file(config_file_path)
-    print(output_to_yaml(constants, config_dict))
+    output_to_yaml(constants, config_dict, "output.yaml")
 
 def parse_config_file(config_file_path):
     try:
@@ -120,12 +120,13 @@ def parse_array(array_str):
     return eval_result
 
 
-def output_to_yaml(constants_dict, config_dict):
+def output_to_yaml(constants_dict, config_dict, output_file_name):
     # Merge constants and configuration into a single output
     combined_output = {**constants_dict, **config_dict}
     
-    yaml_output = yaml.dump(combined_output, default_flow_style=False)
-    return yaml_output
+    with open(output_file_name, 'w') as yaml_file:
+        yaml.dump(combined_output, yaml_file, default_flow_style=False)
+    print(f"Configuration successfully written to {output_file_name}")
 
 if __name__ == "__main__":
     main()

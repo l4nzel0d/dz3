@@ -1,0 +1,27 @@
+const CONST_A = 1;
+const CONST_B = 2.5;
+
+ARRAY : #( 1 2 3 )
+
+
+MY_DICT : {
+    NESTED_ARRAY : #( 4 5 6 ),
+    NESTED_DICT : {
+        A_KEY : 1,
+    },
+    B_KEY : 2,
+    C_KEY : 3,
+    ANOTHER_NESTED_DICT : {
+        D_KEY : 4,
+        DEEPLY_NESTED_DICT : {
+            E_KEY : 5,
+        }
+    }
+}
+
+ANOTHER_UNRELATED_DICT : {
+    F_KEY : 6,
+    REFERENCE_TO_CONST_A : CONST_A,
+    SUM_CONST_A_CONST_B : $[+ CONST_A CONST_B],
+    DIVISION : $[/ CONST_A CONST_B],
+}
